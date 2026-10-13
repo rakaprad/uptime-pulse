@@ -1,0 +1,13 @@
+# Only the Go sources are needed in the build context.
+.git
+.github
+deploy
+bin
+dist
+coverage.out
+*.md
+.env
+.env.*
+config.yaml
+Dockerfile
+.dockerignore

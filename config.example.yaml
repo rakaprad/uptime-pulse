@@ -1,0 +1,42 @@
+# uptime-pulse example configuration.
+# Copy to config.yaml and adjust. ${VAR} references are replaced with
+# environment variables at load time (unset variables become empty strings).
+
+listen: ":8080"          # address for the status page, /api/status, /healthz and /metrics
+log_level: info          # debug | info | warn | error
+log_format: json         # json | text
+cert_warning_days: 14    # alert once when a TLS certificate expires within N days
+
+# Applied to every target unless the target overrides the field.
+defaults:
+  method: GET
+  interval: 30s
+  timeout: 10s
+  expected_status: 200
+  failure_threshold: 3   # consecutive failures before a target is declared DOWN
+
+targets:
+  - name: example
+    url: https://example.com
+    keyword: "Example Domain"   # optional: response body must contain this string
+
+  - name: github-status
+    url: https://www.githubstatus.com/api/v2/status.json
+    interval: 1m
+    keyword: '"indicator"'
+
+  - name: httpbin-teapot
+    url: https://httpbin.org/status/418
+    method: HEAD
+    expected_status: 418
+    failure_threshold: 2
+
+# A notifier is enabled only when its required fields are non-empty,
+# so leaving the environment variables unset disables it.
+notifiers:
+  telegram:
+    bot_token: "${TELEGRAM_BOT_TOKEN}"
+    chat_id: "${TELEGRAM_CHAT_ID}"
+    # message_thread_id: 123   # optional: post into a forum topic
+  slack:
+    webhook_url: "${SLACK_WEBHOOK_URL}"

@@ -1,0 +1,13 @@
+uptime-pulse is running with {{ len .Values.config.targets }} target(s).
+
+Open the status page:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "uptime-pulse.fullname" . }} 8080:{{ .Values.service.port }}
+  open http://localhost:8080
+
+{{- if not .Values.existingSecret }}
+
+NOTE: existingSecret is empty, so notifier tokens are not set and alerts will
+only be logged. Create a Secret and set existingSecret, for example:
+  kubectl -n {{ .Release.Namespace }} create secret generic uptime-pulse-notifiers \
+    --from-literal=TELEGRAM_BOT_TOKEN=... --from-literal=TELEGRAM_CHAT_ID=...
+{{- end }}

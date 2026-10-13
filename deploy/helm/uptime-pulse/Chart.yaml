@@ -1,0 +1,16 @@
+apiVersion: v2
+name: uptime-pulse
+description: Lightweight HTTP uptime monitor with Prometheus metrics and Telegram/Slack alerts
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/rakaprad/uptime-pulse
+sources:
+  - https://github.com/rakaprad/uptime-pulse
+maintainers:
+  - name: Raka Pradipta
+    url: https://github.com/rakaprad
+keywords:
+  - uptime
+  - monitoring
+  - prometheus

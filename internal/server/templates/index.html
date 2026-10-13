@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="15">
+  <title>uptime-pulse</title>
+  <style>
+    :root {
+      --bg: #0d1117; --panel: #161b22; --border: #30363d;
+      --text: #e6edf3; --muted: #8b949e;
+      --up: #3fb950; --down: #f85149; --unknown: #d29922;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 960px; margin: 0 auto; padding: 32px 16px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+    h1 { font-size: 22px; margin: 0; }
+    .summary { color: var(--muted); }
+    .summary strong { color: var(--text); }
+    .banner { margin: 20px 0; padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); }
+    .banner.ok { border-color: var(--up); }
+    .banner.bad { border-color: var(--down); }
+    .targets { display: grid; gap: 10px; }
+    .target {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: center;
+      padding: 14px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; grid-row: span 2; }
+    .dot.up { background: var(--up); box-shadow: 0 0 8px var(--up); }
+    .dot.down { background: var(--down); box-shadow: 0 0 8px var(--down); }
+    .dot.unknown { background: var(--unknown); }
+    .name { font-weight: 600; }
+    .url, .meta { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    .state { font-weight: 600; text-transform: uppercase; font-size: 13px; text-align: right; }
+    .state.up { color: var(--up); } .state.down { color: var(--down); } .state.unknown { color: var(--unknown); }
+    .error { grid-column: 2 / -1; color: var(--down); font-size: 13px; font-family: ui-monospace, monospace; }
+    footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>uptime-pulse</h1>
+    <span class="summary"><strong>{{.Up}}</strong> / {{.Total}} targets up</span>
+  </header>
+
+  {{if eq .Up .Total}}
+  <div class="banner ok">All systems operational.</div>
+  {{else}}
+  <div class="banner bad">Some targets are down or still pending their first verdict.</div>
+  {{end}}
+
+  <section class="targets">
+    {{range .Statuses}}
+    <article class="target">
+      <span class="dot {{.State}}"></span>
+      <div>
+        <div class="name">{{.Name}}</div>
+        <div class="url">{{.URL}}</div>
+      </div>
+      <div class="state {{.State}}">{{.State}}</div>
+      <div class="meta">
+        {{if .StatusCode}}HTTP {{.StatusCode}} · {{end}}{{.LatencyMs}} ms
+        {{with .CertDaysLeft}} · cert expires in {{.}} days{{end}}
+        · checked {{ago .LastCheck}}
+      </div>
+      <div></div>
+      {{if .Error}}<div class="error">{{.Error}}</div>{{end}}
+    </article>
+    {{end}}
+  </section>
+
+  <footer>
+    Refreshes every 15s · {{.Now.UTC.Format "2006-01-02 15:04:05 UTC"}} · uptime-pulse {{.Version}} ·
+    <a href="/api/status">JSON</a> · <a href="/metrics">metrics</a>
+  </footer>
+</main>
+</body>
+</html>

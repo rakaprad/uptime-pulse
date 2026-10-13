@@ -1,0 +1,41 @@
+groups:
+  - name: uptime-pulse
+    rules:
+      - alert: UptimePulseTargetDown
+        expr: uptime_pulse_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.target }} is down"
+          description: "The last checks of {{ $labels.target }} have been failing for more than 2 minutes."
+
+      - alert: UptimePulseHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by (target, le) (rate(uptime_pulse_check_duration_seconds_bucket[10m]))
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.target }} p95 latency above 2s"
+          description: "p95 check latency is {{ $value | humanizeDuration }}."
+
+      - alert: UptimePulseCertExpiringSoon
+        expr: uptime_pulse_cert_expiry_days < 14
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "TLS certificate of {{ $labels.target }} expires soon"
+          description: "Certificate expires in {{ $value | printf \"%.0f\" }} days."
+
+      - alert: UptimePulseMonitorDown
+        expr: up{job="uptime-pulse"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "uptime-pulse itself is not being scraped"
+          description: "Prometheus cannot scrape uptime-pulse; nothing is being monitored."

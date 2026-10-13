@@ -1,0 +1,84 @@
+image:
+  repository: ghcr.io/rakaprad/uptime-pulse
+  # Defaults to the chart appVersion when empty.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# uptime-pulse keeps its state in memory, so run a single replica.
+# Multiple replicas would each send their own alerts.
+replicaCount: 1
+
+# Rendered verbatim into config.yaml (ConfigMap). ${VAR} references are
+# expanded from the container environment, so keep secrets in a Secret.
+config:
+  listen: ":8080"
+  log_level: info
+  log_format: json
+  cert_warning_days: 14
+  defaults:
+    interval: 30s
+    timeout: 10s
+    expected_status: 200
+    failure_threshold: 3
+  targets:
+    - name: example
+      url: https://example.com
+      keyword: Example Domain
+  notifiers:
+    telegram:
+      bot_token: "${TELEGRAM_BOT_TOKEN}"
+      chat_id: "${TELEGRAM_CHAT_ID}"
+    slack:
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+
+# Name of an existing Secret whose keys are exposed as environment variables
+# (e.g. TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, SLACK_WEBHOOK_URL).
+# Create it yourself, or with External Secrets / Sealed Secrets.
+existingSecret: ""
+
+# Extra plain environment variables.
+env: []
+#  - name: TZ
+#    value: Asia/Jakarta
+
+service:
+  type: ClusterIP
+  port: 8080
+
+serviceMonitor:
+  # Requires the Prometheus Operator CRDs.
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
